@@ -14,6 +14,7 @@ function print_branches {
     local role=$1
     local CHECK_DEVELOP="x"
     local CHECK_MASTER="x"
+    local CHECK_TAG="x"
     local hash_master=""
     local hash_develop=""
 
@@ -35,13 +36,35 @@ function print_branches {
     if [ $? -eq 0 ]; then
         CHECK_MASTER="✔";
         hash_master=`git --git-dir=${DIR}/../${role}/.git log -n1 --format=%h origin/master`
+
+        if [[ "${hash_v10}" == "${hash_master}" ]]; then
+            CHECK_TAG="✔";
+        fi
     fi
 
     echo "
 |  master | ${CHECK_MASTER} | ${hash_master}
 | develop | ${CHECK_DEVELOP} | ${hash_develop}
-|    v1.0 | - | ${hash_v10}
-"
+|    v1.0 | ${CHECK_TAG} | ${hash_v10}"
+
+    tag=`git --git-dir=${DIR}/../${role}/.git tag -l \
+        | grep -E "^v1\.0\.[0-9]+" \
+        | sort -t. -k 1,1nr -k 2,2nr -k 3,3nr\
+        | head -n1`
+
+    tag_hash=`git --git-dir=${DIR}/../${role}/.git log -n1 --format=%h ${tag}`
+    echo "|  ${tag} | ${CHECK_TAG} | ${tag_hash}"
+
+    tags=`git --git-dir=${DIR}/../${role}/.git tag -l \
+        | grep -E "^v1\.0\.[0-9]+" \
+        | grep -v "${tag}" \
+        | sort -t. -k 1,1nr -k 2,2nr -k 3,3nr \
+        | head -n3 | tail -n2`
+
+    for tag in ${tags}; do
+        tag_hash=`git --git-dir=${DIR}/../${role}/.git log -n1 --format=%h ${tag}`
+        echo "|  ${tag} | - | ${tag_hash}"
+    done
 }
 
 main "$@"

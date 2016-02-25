@@ -13,7 +13,7 @@ git fetch --tags
 
 info "Finding next tag name"
 TAGS=`git tag -l | grep -E "^${VERSION_MINOR}\.[0-9]+"`
-: ${TAGS:=v1.0.0}
+: ${TAGS:=${VERSION_MINOR}.0}
 MAJOR=`echo "${TAGS}" | sed 's/v\([0-9]*\)\..*/\1/' | sort -n | tail -1`
 MINOR=`echo "${TAGS}" | grep v${MAJOR} | sed 's/v[0-9]*\.\([0-9]*\)\..*/\1/' | sort -n | tail -1`
 PATCH=`echo "${TAGS}" | grep v${MAJOR}.${MINOR} | sed 's/v[0-9]*\.[0-9]*\.\([0-9]*\)/\1/' | sort -n | tail -1`
