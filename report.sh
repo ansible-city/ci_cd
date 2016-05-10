@@ -4,10 +4,14 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . ${DIR}/base.sh
 
 function main {
-    for role in ${ROLES}; do
-        info "Checking ${role}"
-        print_branches ${role}
-    done
+    if [[ "${1}" -eq "this" ]]; then
+        print_branches $(basename `pwd`)
+    else
+        for role in ${ROLES}; do
+            info "Checking ${role}"
+            print_branches ${role}
+        done
+    fi
 }
 
 function print_branches {
@@ -44,8 +48,11 @@ function print_branches {
 
     echo "
 |  master | ${CHECK_MASTER} | ${hash_master}
-| develop | ${CHECK_DEVELOP} | ${hash_develop}
-|    v1.0 | ${CHECK_TAG} | ${hash_v10}"
+| develop | ${CHECK_DEVELOP} | ${hash_develop}"
+
+
+
+    echo "|    v1.0 | ${CHECK_TAG} | ${hash_v10}"
 
     tag=`git --git-dir=${DIR}/../${role}/.git tag -l \
         | grep -E "^v1\.0\.[0-9]+" \
@@ -65,6 +72,13 @@ function print_branches {
         tag_hash=`git --git-dir=${DIR}/../${role}/.git log -n1 --format=%h ${tag}`
         echo "|  ${tag} | - | ${tag_hash}"
     done
+
+    info "Merged Branches (to be deleted)"
+    git --git-dir=${DIR}/../${role}/.git branch -a --merged origin/develop \
+        | grep "remotes/origin" \
+        | sed 's/remotes\/origin\/\(.*\)/\1/' \
+        | grep -vE "(develop|master)" \
+        | xargs -I{} echo " o  {}"
 }
 
 main "$@"

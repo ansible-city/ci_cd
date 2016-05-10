@@ -3,6 +3,8 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 . ${DIR}/base.sh
 
+VERSION_MINOR=`head -n1 VERSION`
+
 : ${VERSION_MINOR:=v1.0}
 : ${GIT_SRC:=origin/develop}
 : ${GIT_DST:=master}
